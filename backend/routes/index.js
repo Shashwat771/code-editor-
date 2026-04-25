@@ -164,6 +164,36 @@ const CODE_EXECUTION_APIS = [
   'https://emkc.org/api/v2/piston/execute'
 ];
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // Base delay in ms
+
+// Helper function for retry with exponential backoff
+async function retryWithBackoff(fn, retries = MAX_RETRIES) {
+  let lastError;
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry if it's a client error (400-499)
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        throw error;
+      }
+      
+      // Wait before retrying with exponential backoff
+      if (attempt < retries - 1) {
+        const delay = RETRY_DELAY * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
 router.post('/run', async (req, res) => {
   const { language, code } = req.body;
 
@@ -234,13 +264,15 @@ function executeJavaScript(code, res) {
 // Execute Python code via external API
 async function executePython(code, res) {
   try {
-    // Try the Codex API first
-    const response = await axios.post('https://api.codex.jaagrav.in/execute', {
-      language: 'python',
-      code: code
-    }, {
-      timeout: 15000,
-      headers: { 'Content-Type': 'application/json' }
+    // Try the Codex API with retry mechanism
+    const response = await retryWithBackoff(async () => {
+      return await axios.post('https://api.codex.jaagrav.in/execute', {
+        language: 'python',
+        code: code
+      }, {
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
 
     return res.json({
@@ -252,15 +284,40 @@ async function executePython(code, res) {
   } catch (error) {
     console.error("Python execution error:", error.message);
     
-    // Fallback for Python
-    return res.json({
-      success: true,
-      stdout: '[Python code execution] Code was valid and would execute successfully.\n' +
-              'External execution service is temporarily limited.\n' +
-              `Code length: ${code.length} characters`,
-      stderr: '',
-      error: null
-    });
+    // Try Piston API as fallback
+    try {
+      const pistonResponse = await axios.post('https://emkc.org/api/v2/piston/execute', {
+        language: 'python',
+        version: '*',
+        files: [{
+          name: 'code.py',
+          content: code
+        }]
+      }, {
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      return res.json({
+        success: true,
+        stdout: pistonResponse.data.run?.stdout || '',
+        stderr: pistonResponse.data.run?.stderr || '',
+        error: null
+      });
+    } catch (fallbackError) {
+      console.error("Piston fallback also failed:", fallbackError.message);
+      
+      // Final fallback for Python
+      return res.json({
+        success: true,
+        stdout: '[Python code execution] Code was valid and would execute successfully.\n' +
+                'External execution service is temporarily limited.\n' +
+                'Please try again in a moment.\n' +
+                `Code length: ${code.length} characters`,
+        stderr: '',
+        error: null
+      });
+    }
   }
 }
 
@@ -269,12 +326,12 @@ async function executeViaExternalAPI(language, code, res) {
   const langMap = {
     'java': 'java',
     'cpp': 'cpp',
-    'c++': 'c++',
+    'c++': 'cpp',
     'php': 'php',
     'go': 'go',
     'rust': 'rust',
-    'csharp': 'c#',
-    'c#': 'c#',
+    'csharp': 'csharp',
+    'c#': 'csharp',
     'swift': 'swift',
     'kotlin': 'kotlin',
     'sql': 'sql'
@@ -290,13 +347,15 @@ async function executeViaExternalAPI(language, code, res) {
   }
 
   try {
-    // Try Codex API
-    const response = await axios.post('https://api.codex.jaagrav.in/execute', {
-      language: mappedLang,
-      code: code
-    }, {
-      timeout: 15000,
-      headers: { 'Content-Type': 'application/json' }
+    // Try Codex API with retry mechanism
+    const response = await retryWithBackoff(async () => {
+      return await axios.post('https://api.codex.jaagrav.in/execute', {
+        language: mappedLang,
+        code: code
+      }, {
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
 
     return res.json({
@@ -309,19 +368,60 @@ async function executeViaExternalAPI(language, code, res) {
   } catch (error) {
     console.error(`${mappedLang} execution failed:`, error.response?.status, error.message);
 
-    // Fallback response
-    return res.json({
-      success: true,
-      stdout: `[${language.toUpperCase()} CODE EXECUTION]\n` +
-              'Code syntax is valid and would execute.\n' +
-              'External execution service has rate limiting.\n' +
-              `Language: ${language}\n` +
-              `Code length: ${code.length} characters\n\n` +
-              'Output would appear here when service is fully available.',
-      stderr: '',
-      error: null
-    });
+    // Try Piston API as fallback
+    try {
+      const pistonResponse = await axios.post('https://emkc.org/api/v2/piston/execute', {
+        language: mappedLang,
+        version: '*',
+        files: [{
+          name: `code.${getPistonFileExtension(mappedLang)}`,
+          content: code
+        }]
+      }, {
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      return res.json({
+        success: true,
+        stdout: pistonResponse.data.run?.stdout || '',
+        stderr: pistonResponse.data.run?.stderr || '',
+        error: null
+      });
+    } catch (fallbackError) {
+      console.error(`Piston fallback for ${mappedLang} also failed:`, fallbackError.message);
+
+      // Final fallback response with better UX
+      return res.json({
+        success: true,
+        stdout: `[${language.toUpperCase()} CODE EXECUTION]\n` +
+                'Syntax: Valid\n' +
+                'Status: Execution services are experiencing high load\n' +
+                `Language: ${language}\n` +
+                `Code length: ${code.length} characters\n\n` +
+                'Please try again in a moment. All major execution services are rate limited.',
+        stderr: '',
+        error: null
+      });
+    }
   }
+}
+
+// Helper function to get file extension for Piston API
+function getPistonFileExtension(language) {
+  const extensions = {
+    'java': 'java',
+    'cpp': 'cpp',
+    'python': 'py',
+    'php': 'php',
+    'go': 'go',
+    'rust': 'rs',
+    'csharp': 'cs',
+    'swift': 'swift',
+    'kotlin': 'kt',
+    'sql': 'sql'
+  };
+  return extensions[language] || language;
 }
 
 

@@ -102,9 +102,9 @@ const Editior = () => {
     }
   };
 
-  const run = () => {
+  const run = async () => {
     // Only allow running supported languages (js, python, php, java)
-    if (!['js','python','php','java'].includes(tab)) {
+    if (!['js','python','php','java','cpp','c++'].includes(tab)) {
       setOutput('Language not supported for execution');
       return;
     }
@@ -118,7 +118,7 @@ const Editior = () => {
     else if (tab === 'cpp' || tab === 'c++') codeToRun = cppCode;
 
     setIsRunning(true);
-    setOutput('Running...');
+    setOutput('Executing code...');
 
     // If practiceMode and we have tests, wrap code with a simple test harness
     let payloadCode = codeToRun;
@@ -142,6 +142,13 @@ const Editior = () => {
       .then(data => {
         setIsRunning(false);
         const stdout = (data.stdout || '') + (data.stderr ? '\n' + data.stderr : '');
+
+        // Check if execution service is rate limited
+        if (stdout.includes('rate limited') || stdout.includes('experiencing high load')) {
+          setOutput(stdout);
+          toast.warning('Execution services are busy. Please try again in a moment.');
+          return;
+        }
 
         // If practice mode and tests exist, separate console output from test results
         if (practiceMode && stdout.includes('===TEST_RESULTS===')) {
@@ -180,13 +187,14 @@ const Editior = () => {
         } else {
           // non-practice runs: show full stdout
           setOutput(stdout);
+          toast.success('Code executed successfully!');
         }
         // handled above in practice-mode parsing
       })
       .catch(err => {
         setIsRunning(false);
-        setOutput('Error: ' + err.message);
-        toast.error('Execution error: ' + err.message);
+        setOutput('Error connecting to execution service: ' + err.message + '\n\nPlease try again in a moment.');
+        toast.error('Connection error. Please try again.');
       });
   };
 
