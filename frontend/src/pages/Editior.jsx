@@ -11,15 +11,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Editior = () => {
-  const [tab, setTab] = useState("js");
+  const [tab, setTab] = useState("html");
   const [isLightMode, setIsLightMode] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   // test panel is always visible now
-  const [jsCode, setJsCode] = useState("// some comment");
-  const [pythonCode, setPythonCode] = useState("print(\"Hello from Python\")");
-  const [phpCode, setPhpCode] = useState("<?php\n echo 'Hello from PHP';\n?>");
-  const [javaCode, setJavaCode] = useState("public class Main { public static void main(String[] args){ System.out.println(\"Hello from Java\"); } }");
-  const [cppCode, setCppCode] = useState("#include <iostream>\nusing namespace std;\nint main(){ cout << \"Hello from C++\" << endl; return 0; }");
+  const [htmlCode, setHtmlCode] = useState("<!DOCTYPE html>\n<html>\n<head>\n  <title>Hello World</title>\n</head>\n<body>\n  <h1>Welcome to TechioLaza</h1>\n</body>\n</html>");
+  const [cssCode, setCssCode] = useState("body {\n  font-family: Arial, sans-serif;\n  background-color: #f0f0f0;\n}\n\nh1 {\n  color: #333;\n}");
+  const [jsCode, setJsCode] = useState("// Write your JavaScript code here\nconsole.log(\"Hello from JavaScript\");");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [projectTitle, setProjectTitle] = useState(""); // State for project title
@@ -103,19 +101,14 @@ const Editior = () => {
   };
 
   const run = async () => {
-    // Only allow running supported languages (js, python, php, java)
-    if (!['js','python','php','java','cpp','c++'].includes(tab)) {
-      setOutput('Language not supported for execution');
+    // Only allow running JavaScript
+    if (tab !== 'js') {
+      setOutput('Only JavaScript can be executed. HTML and CSS are rendered in the preview.');
       return;
     }
 
-    // for supported languages, call backend /run
-    let codeToRun = '';
-    if (tab === 'js') codeToRun = jsCode;
-    else if (tab === 'python') codeToRun = pythonCode;
-    else if (tab === 'php') codeToRun = phpCode;
-    else if (tab === 'java') codeToRun = javaCode;
-    else if (tab === 'cpp' || tab === 'c++') codeToRun = cppCode;
+    // for JavaScript, call backend /run
+    let codeToRun = jsCode;
 
     setIsRunning(true);
     setOutput('Executing code...');
@@ -208,10 +201,9 @@ const Editior = () => {
       body: JSON.stringify({
         userId: localStorage.getItem("userId"),
         projId: projectID,
-        jsCode: jsCode,
-        pythonCode: pythonCode,
-        phpCode: phpCode,
-        javaCode: javaCode
+        htmlCode: htmlCode,
+        cssCode: cssCode,
+        jsCode: jsCode
       })
     })
       .then(res => res.json())
@@ -260,10 +252,9 @@ const Editior = () => {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.project) {
+          if (data.project.htmlCode) setHtmlCode(data.project.htmlCode);
+          if (data.project.cssCode) setCssCode(data.project.cssCode);
           if (data.project.jsCode) setJsCode(data.project.jsCode);
-          if (data.project.pythonCode) setPythonCode(data.project.pythonCode);
-          if (data.project.phpCode) setPhpCode(data.project.phpCode);
-          if (data.project.javaCode) setJavaCode(data.project.javaCode);
           setProjectTitle(data.project.title); // Set project title
         }
       });
@@ -281,7 +272,7 @@ const Editior = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [projectID, jsCode, pythonCode, phpCode, javaCode]);
+  }, [projectID, htmlCode, cssCode, jsCode]);
 
 
   const activeTabClass = "bg-[#1E1E1E] text-white border-t-2 border-primary-purple";
@@ -341,13 +332,13 @@ const Editior = () => {
           {/* Toolbar */}
           <div className="flex items-center justify-between px-4 h-12 bg-[#141419] border-b border-[#2A2A35]">
             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-              {['js', 'python', 'java', 'php'].map((lang) => (
+              {['html', 'css', 'js'].map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setTab(lang)}
                   className={`px-4 py-2 text-sm font-medium transition-colors ${tab === lang ? 'text-white bg-[#1E1E1E]' : 'text-gray-500 hover:text-gray-300'}`}
                 >
-                  {lang === 'cpp' ? 'C++' : lang.toUpperCase()}
+                  {lang.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -370,13 +361,12 @@ const Editior = () => {
               height="100%"
               theme={isLightMode ? "vs-light" : "vs-dark"}
               language={tab === 'js' ? 'javascript' : tab}
-              value={tab === 'js' ? jsCode : tab === 'python' ? pythonCode : tab === 'php' ? phpCode : javaCode}
+              value={tab === 'html' ? htmlCode : tab === 'css' ? cssCode : jsCode}
               onChange={(value) => {
                 const v = value || "";
-                if (tab === 'js') setJsCode(v);
-                else if (tab === 'python') setPythonCode(v);
-                else if (tab === 'php') setPhpCode(v);
-                else if (tab === 'java') setJavaCode(v);
+                if (tab === 'html') setHtmlCode(v);
+                else if (tab === 'css') setCssCode(v);
+                else if (tab === 'js') setJsCode(v);
               }}
               options={{
                 fontSize: 14,
@@ -424,7 +414,7 @@ const Editior = () => {
           <div className={`w-1/2 flex flex-col bg-[#0A0A0F]`}>
             <div className="h-12 flex items-center px-4 bg-[#141419] border-b border-[#2A2A35]">
               <span className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-                {tab === 'js' ? 'Live Preview' : 'Terminal Output'}
+                {tab === 'js' ? 'Console Output' : 'Live Preview'}
               </span>
             </div>
 
