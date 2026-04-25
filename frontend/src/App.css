@@ -114,9 +114,28 @@ html {
 
 /* ===== Grid Layout ===== */
 .grid {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 20px;
+  display: grid !important;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* ===== Light Mode ===== */

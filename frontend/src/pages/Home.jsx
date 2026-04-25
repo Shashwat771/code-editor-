@@ -99,14 +99,14 @@ const Home = () => {
   return (
     <>
       <Navbar isGridLayout={isGridLayout} setIsGridLayout={setIsGridLayout} />
-      <div className='flex items-center justify-between px-[100px] my-12 animate-slideUp'>
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px] my-6 sm:my-12 gap-4 animate-slideUp'>
         <div>
-          <h2 className='text-3xl font-bold mb-1'>Hi, {userData ? userData.username : ""} 👋</h2>
-          <p className='text-gray-400 text-sm'>Welcome back to your projects</p>
+          <h2 className='text-2xl sm:text-3xl font-bold mb-1'>Hi, {userData ? userData.username : ""} 👋</h2>
+          <p className='text-gray-400 text-xs sm:text-sm'>Welcome back to your projects</p>
         </div>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-2 sm:gap-3 w-full sm:w-auto'>
           {/* Search Bar */}
-          <div className="inputBox !w-[380px] !mb-0">
+          <div className="inputBox !mb-0 flex-1 sm:flex-none sm:!w-72 lg:!w-96">
             <input
               type="text"
               placeholder='Search projects...'
@@ -114,22 +114,22 @@ const Home = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button onClick={() => { setIsCreateModelShow(true) }} className='btnBlue !rounded-full !w-12 !h-12 !p-0 text-2xl flex items-center justify-center'>+</button>
+          <button onClick={() => { setIsCreateModelShow(true) }} className='btnBlue !rounded-full !w-10 sm:!w-12 !h-10 sm:!h-12 !p-0 text-xl sm:text-2xl flex items-center justify-center flex-shrink-0'>+</button>
         </div>
       </div>
 
       {/* Project Display */}
-      <div className="cards px-[100px]">
+      <div className="cards px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px]">
         {
           isGridLayout ?
-            <div className='grid'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'>
               {
                 filteredData.length > 0 ? filteredData.map((item, index) => (
                   <GridCard key={index} item={item} />
-                )) : <p className='text-gray-400 text-center w-full py-12'>No projects found</p>
+                )) : <p className='text-gray-400 text-center w-full py-12 col-span-full'>No projects found</p>
               }
             </div>
-            : <div className='list space-y-4'>
+            : <div className='list space-y-3 sm:space-y-4'>
               {
                 filteredData.length > 0 ? filteredData.map((item, index) => (
                   <ListCard key={index} item={item} />
@@ -141,9 +141,9 @@ const Home = () => {
 
       {/* Modal for Creating a New Project */}
       {isCreateModelShow &&
-        <div className="createModelCon fixed top-0 left-0 right-0 bottom-0 w-screen h-screen modal-backdrop flex items-center justify-center animate-fadeIn" style={{ zIndex: 100 }}>
-          <div className="createModel w-[28vw] glass-strong shadow-elevated rounded-2xl p-8 animate-scaleIn">
-            <h3 className='text-2xl font-semibold mb-6'>Create New Project</h3>
+        <div className="createModelCon fixed top-0 left-0 right-0 bottom-0 w-screen h-screen modal-backdrop flex items-center justify-center animate-fadeIn p-4" style={{ zIndex: 100 }}>
+          <div className="createModel w-full sm:w-96 glass-strong shadow-elevated rounded-2xl p-6 sm:p-8 animate-scaleIn">
+            <h3 className='text-xl sm:text-2xl font-semibold mb-6'>Create New Project</h3>
             <div className="inputBox !bg-transparent !mb-6">
               <input
                 onChange={(e) => { setProjTitle(e.target.value) }}
@@ -152,9 +152,9 @@ const Home = () => {
                 placeholder='Project Title'
               />
             </div>
-            <div className='flex items-center gap-3 w-full'>
-              <button onClick={createProj} className='btnBlue rounded-xl w-[48%] !py-3'>Create</button>
-              <button onClick={() => { setIsCreateModelShow(false) }} className='btnBlue !bg-gray-700 hover:!bg-gray-600 rounded-xl w-[48%] !py-3'>Cancel</button>
+            <div className='flex items-center gap-2 sm:gap-3 w-full'>
+              <button onClick={createProj} className='btnBlue rounded-xl flex-1 !py-3 text-sm sm:text-base'>Create</button>
+              <button onClick={() => { setIsCreateModelShow(false) }} className='btnBlue !bg-gray-700 hover:!bg-gray-600 rounded-xl flex-1 !py-3 text-sm sm:text-base'>Cancel</button>
             </div>
           </div>
         </div>
