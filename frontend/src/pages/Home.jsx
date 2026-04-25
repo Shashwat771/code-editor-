@@ -99,62 +99,122 @@ const Home = () => {
   return (
     <>
       <Navbar isGridLayout={isGridLayout} setIsGridLayout={setIsGridLayout} />
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px] my-6 sm:my-12 gap-4 animate-slideUp'>
-        <div>
-          <h2 className='text-2xl sm:text-3xl font-bold mb-1'>Hi, {userData ? userData.username : ""} 👋</h2>
-          <p className='text-gray-400 text-xs sm:text-sm'>Welcome back to your projects</p>
-        </div>
-        <div className='flex items-center gap-2 sm:gap-3 w-full sm:w-auto'>
-          {/* Search Bar */}
-          <div className="inputBox !mb-0 flex-1 sm:flex-none sm:!w-72 lg:!w-96">
-            <input
-              type="text"
-              placeholder='Search projects...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      
+      {/* Hero Section */}
+      <div className='relative overflow-hidden px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px] py-12 sm:py-20 animate-slideUp'>
+        {/* Background Gradient Orbs */}
+        <div className='absolute top-0 left-0 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse'></div>
+        <div className='absolute -bottom-8 right-0 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse' style={{ animationDelay: '2s' }}></div>
+        
+        <div className='relative z-10'>
+          <div className='mb-8'>
+            <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight'>
+              Welcome back, <span className='gradient-text'>{userData ? userData.username : "Developer"}</span>
+            </h1>
+            <p className='text-gray-400 text-lg sm:text-xl max-w-2xl'>
+              Continue building amazing projects. Your coding environment awaits with powerful tools and unlimited possibilities.
+            </p>
           </div>
-          <button onClick={() => { setIsCreateModelShow(true) }} className='btnBlue !rounded-full !w-10 sm:!w-12 !h-10 sm:!h-12 !p-0 text-xl sm:text-2xl flex items-center justify-center flex-shrink-0'>+</button>
+
+          {/* Search and Create Section */}
+          <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto'>
+            <div className="inputBox !mb-0 flex-1 sm:flex-none sm:!w-80 lg:!w-96">
+              <svg className='w-5 h-5 mx-3' fill='none' stroke='currentColor' viewBox='0 0 24 24' opacity='0.5'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+              </svg>
+              <input
+                type="text"
+                placeholder='Search your projects...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button onClick={() => { setIsCreateModelShow(true) }} className='btnBlue !rounded-lg !px-6 sm:!px-8 !py-3 text-base sm:text-lg font-semibold flex items-center justify-center gap-2 whitespace-nowrap'>
+              <span>+</span>
+              <span>New Project</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Project Display */}
-      <div className="cards px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px]">
-        {
-          isGridLayout ?
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'>
-              {
-                filteredData.length > 0 ? filteredData.map((item, index) => (
-                  <GridCard key={index} item={item} />
-                )) : <p className='text-gray-400 text-center w-full py-12 col-span-full'>No projects found</p>
-              }
-            </div>
-            : <div className='list space-y-3 sm:space-y-4'>
-              {
-                filteredData.length > 0 ? filteredData.map((item, index) => (
-                  <ListCard key={index} item={item} />
-                )) : <p className='text-gray-400 text-center py-12'>No projects found</p>
-              }
-            </div>
-        }
+      {/* Stats Section */}
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px] py-8 sm:py-12'>
+        <div className='glass p-6 rounded-lg backdrop-blur-sm'>
+          <p className='text-gray-400 text-sm mb-2'>Total Projects</p>
+          <h3 className='text-3xl font-bold text-white'>{filteredData.length}</h3>
+        </div>
+        <div className='glass p-6 rounded-lg backdrop-blur-sm'>
+          <p className='text-gray-400 text-sm mb-2'>In Development</p>
+          <h3 className='text-3xl font-bold text-white'>{filteredData.length}</h3>
+        </div>
+        <div className='glass p-6 rounded-lg backdrop-blur-sm'>
+          <p className='text-gray-400 text-sm mb-2'>Last Updated</p>
+          <h3 className='text-lg font-semibold text-white'>{filteredData.length > 0 ? new Date(filteredData[0].date).toLocaleDateString() : 'N/A'}</h3>
+        </div>
+      </div>
+
+      {/* Projects Section */}
+      <div className='px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[100px] py-12 sm:py-16'>
+        <div className='mb-8'>
+          <h2 className='text-2xl sm:text-3xl font-bold mb-2'>Your Projects</h2>
+          <p className='text-gray-400'>Manage and organize all your coding projects in one place</p>
+        </div>
+
+        <div className="cards">
+          {
+            isGridLayout ?
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'>
+                {
+                  filteredData.length > 0 ? filteredData.map((item, index) => (
+                    <GridCard key={index} item={item} />
+                  )) : <div className='col-span-full flex flex-col items-center justify-center py-16'>
+                    <div className='text-6xl mb-4 opacity-20'>📭</div>
+                    <p className='text-gray-400 text-lg'>No projects found</p>
+                    <p className='text-gray-500 text-sm mt-2'>Create your first project to get started</p>
+                  </div>
+                }
+              </div>
+              : <div className='list space-y-3 sm:space-y-4'>
+                {
+                  filteredData.length > 0 ? filteredData.map((item, index) => (
+                    <ListCard key={index} item={item} />
+                  )) : <div className='flex flex-col items-center justify-center py-16'>
+                    <div className='text-6xl mb-4 opacity-20'>📭</div>
+                    <p className='text-gray-400 text-lg'>No projects found</p>
+                    <p className='text-gray-500 text-sm mt-2'>Create your first project to get started</p>
+                  </div>
+                }
+              </div>
+          }
+        </div>
       </div>
 
       {/* Modal for Creating a New Project */}
       {isCreateModelShow &&
         <div className="createModelCon fixed top-0 left-0 right-0 bottom-0 w-screen h-screen modal-backdrop flex items-center justify-center animate-fadeIn p-4" style={{ zIndex: 100 }}>
-          <div className="createModel w-full sm:w-96 glass-strong shadow-elevated rounded-2xl p-6 sm:p-8 animate-scaleIn">
-            <h3 className='text-xl sm:text-2xl font-semibold mb-6'>Create New Project</h3>
-            <div className="inputBox !bg-transparent !mb-6">
+          <div className="createModel w-full sm:w-96 glass-strong shadow-elevated rounded-2xl p-6 sm:p-8 animate-scaleIn border border-purple-500/30">
+            <div className='flex items-center justify-between mb-6'>
+              <div>
+                <h3 className='text-2xl sm:text-3xl font-bold'>New Project</h3>
+                <p className='text-gray-400 text-sm mt-1'>Create and start coding</p>
+              </div>
+              <button onClick={() => { setIsCreateModelShow(false) }} className='text-gray-400 hover:text-white transition-colors text-2xl'>×</button>
+            </div>
+            <div className="inputBox !bg-transparent !mb-6 !border-purple-500/20 hover:!border-purple-500/50">
+              <svg className='w-5 h-5 mx-3' fill='none' stroke='currentColor' viewBox='0 0 24 24' opacity='0.5'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 10V3L4 14h7v7l9-11h-7z' />
+              </svg>
               <input
                 onChange={(e) => { setProjTitle(e.target.value) }}
                 value={projTitle}
                 type="text"
-                placeholder='Project Title'
+                placeholder='Project name'
+                onKeyPress={(e) => e.key === 'Enter' && createProj()}
               />
             </div>
             <div className='flex items-center gap-2 sm:gap-3 w-full'>
-              <button onClick={createProj} className='btnBlue rounded-xl flex-1 !py-3 text-sm sm:text-base'>Create</button>
-              <button onClick={() => { setIsCreateModelShow(false) }} className='btnBlue !bg-gray-700 hover:!bg-gray-600 rounded-xl flex-1 !py-3 text-sm sm:text-base'>Cancel</button>
+              <button onClick={createProj} className='btnBlue rounded-xl flex-1 !py-3 text-sm sm:text-base font-semibold'>Create Project</button>
+              <button onClick={() => { setIsCreateModelShow(false) }} className='btnBlue !bg-gray-700 hover:!bg-gray-600 rounded-xl flex-1 !py-3 text-sm sm:text-base font-semibold'>Cancel</button>
             </div>
           </div>
         </div>
