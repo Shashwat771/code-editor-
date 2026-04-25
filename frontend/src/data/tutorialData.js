@@ -351,7 +351,6 @@ console.log("Area:", square.area);`
     }
   },
   python: {
-    language: "python",
     name: "Python",
     icon: "python",
     topics: {
@@ -430,7 +429,6 @@ print(f"Result: {add(5, 7)}")`
     }
   },
   java: {
-    language: "java",
     name: "Java",
     icon: "java",
     topics: {
@@ -519,7 +517,6 @@ public class Main {
     }
   },
   cpp: {
-    language: "cpp",
     name: "C++",
     icon: "cplusplus",
     topics: {
@@ -596,7 +593,6 @@ int main() {
     }
   },
   csharp: {
-    language: "csharp",
     name: "C#",
     icon: "csharp",
     topics: {
@@ -663,7 +659,6 @@ public class Program {
     }
   },
   go: {
-    language: "go",
     name: "Go",
     icon: "go",
     topics: {
@@ -746,7 +741,6 @@ func main() {
     }
   },
   rust: {
-    language: "rust",
     name: "Rust",
     icon: "rust",
     topics: {
@@ -803,7 +797,6 @@ fn main() {
     }
   },
   sql: {
-    language: "sql",
     name: "SQL",
     icon: "sql",
     topics: {
@@ -827,7 +820,6 @@ WHERE Salary > (
     }
   },
   swift: {
-    language: "swift",
     name: "Swift",
     icon: "swift",
     topics: {
@@ -857,7 +849,6 @@ printName(nil)`
     }
   },
   kotlin: {
-    language: "kotlin",
     name: "Kotlin",
     icon: "kotlin",
     topics: {
@@ -890,7 +881,6 @@ fun main() {
     }
   },
   php: {
-    language: "php",
     name: "PHP",
     icon: "php",
     topics: {
